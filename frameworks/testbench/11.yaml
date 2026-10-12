@@ -8,6 +8,12 @@ label: Testbench
 color: "#475569"
 public_dir: vendor/orchestra/testbench-core/laravel/public
 
+# The skeleton finds the package's vendor through TESTBENCH_WORKING_PATH, which
+# testbench serve sets; testbench removes the vendor symlink it would otherwise use.
+nginx:
+  fastcgi_params:
+    TESTBENCH_WORKING_PATH: "{{root}}"
+
 php:
   min: "8.3"
   max: "8.5"
