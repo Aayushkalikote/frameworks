@@ -26,12 +26,26 @@ host_commands:
 commands:
   - name: native:install
     label: Install NativePHP runtime
-    command: >-
-      npm --prefix vendor/nativephp/desktop/resources/electron install &&
-      NATIVEPHP_PHP_BINARY_PATH="$PWD/vendor/nativephp/php-bin/bin/"
-      NATIVEPHP_PHP_BINARY_VERSION="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
-      NATIVEPHP_BUILD_PATH="$PWD/vendor/nativephp/desktop/resources/build"
-      node vendor/nativephp/desktop/resources/electron/php.js &&
+    # From 2.4 nativephp/php-bin is gone and the package downloads PHP itself, but
+    # only through a PHP that runs here. The bootstrap fetches that first one into
+    # the package's own cache, where it later finds it current.
+    command: |
+      set -e
+      npm --prefix vendor/nativephp/desktop/resources/electron install
+      version="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
+      bin="$PWD/vendor/nativephp/php-bin/bin"
+      if [ ! -d "$bin" ]; then
+        os=mac; arch=arm64
+        case "$(uname -s)" in Linux) os=linux ;; esac
+        case "$(uname -m)" in x86_64|amd64) arch=x64 ;; esac
+        bin="$PWD/nativephp/binaries/main"
+        mkdir -p "$bin/$os/$arch"
+        test -f "$bin/../.gitignore" || echo '*' > "$bin/../.gitignore"
+        curl -fsSL -o "$bin/$os/$arch/php-$version.zip" "https://bin.nativephp.com/main/desktop/$os/$arch/php-$version.zip"
+      fi
+      NATIVEPHP_PHP_BINARY_PATH="$bin/" NATIVEPHP_PHP_BINARY_VERSION="$version" \
+        NATIVEPHP_BUILD_PATH="$PWD/vendor/nativephp/desktop/resources/build" \
+        node vendor/nativephp/desktop/resources/electron/php.js
       php artisan native:install --no-interaction
     description: Install the Electron dependencies and the matching desktop PHP binary, then publish the NativePHP scaffolding
     output: text
