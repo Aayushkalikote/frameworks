@@ -1,0 +1,7 @@
+package: mosparo/php-api-client
+
+# Every mosparo integration verifies submissions through this client, so it
+# reaches the lock under the Symfony bundle and the TYPO3 extensions alike.
+suggest_services:
+  - name: mosparo
+    reason: Spam protection the client verifies form submissions against

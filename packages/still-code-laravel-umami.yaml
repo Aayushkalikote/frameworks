@@ -1,0 +1,8 @@
+package: still-code/laravel-umami
+frameworks:
+  - name: laravel
+
+# The project reads its stats through the package, so the wizard ticks it.
+suggest_services:
+  - name: umami
+    reason: Analytics the package reads its stats from
